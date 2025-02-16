@@ -56,6 +56,10 @@ class WelcomePage extends StatelessWidget {
                       color: Color(0xFF4CAF50), // Light green glow
                       blurRadius: 8.0,
                     ),
+                    Shadow(offset: Offset(-1, -1), color: Color(0xFF0A2A0A)), // Very dark green
+                    Shadow(offset: Offset(1, -1), color: Color(0xFF0A2A0A)),
+                    Shadow(offset: Offset(1, 1), color: Color(0xFF0A2A0A)),
+                    Shadow(offset: Offset(-1, 1), color: Color(0xFF0A2A0A)),
                   ],
                 ),
               ),
@@ -214,6 +218,10 @@ class _PostPageState extends State<PostPage> {
                 color: Color(0xFF4CAF50),
                 blurRadius: 8.0,
               ),
+              Shadow(offset: Offset(-1, -1), color: Color(0xFF0A2A0A)), // Very dark green
+              Shadow(offset: Offset(1, -1), color: Color(0xFF0A2A0A)),
+              Shadow(offset: Offset(1, 1), color: Color(0xFF0A2A0A)),
+              Shadow(offset: Offset(-1, 1), color: Color(0xFF0A2A0A)),
             ],
           ),
         ),
