@@ -163,40 +163,117 @@ class _PostPageState extends State<PostPage> {
     super.dispose();
   }
 
+  Widget _buildCommonNavMenu() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem('Post', 0),
+            _buildNavItem('Albums', 1),
+            _buildNavItem('Feed', 2),
+          ],
+        ),
+        Container(
+          width: double.infinity,
+          height: 2,
+          child: Stack(
+            children: [
+              Positioned(
+                left: _selectedIndex * (MediaQuery.of(context).size.width / 3),
+                width: MediaQuery.of(context).size.width / 3,
+                child: Container(
+                  height: 2,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_selectedIndex == 2) // Only show icons for Feed Page
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.grid_on),
+                  color: const Color(0xFF1B5E20),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.star),
+                  color: const Color(0xFF1B5E20),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.play_circle_outline),
+                  color: const Color(0xFF1B5E20),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.person_outline),
+                  color: const Color(0xFF1B5E20),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget currentPage;
     switch (_selectedIndex) {
       case 0:
-        currentPage = ListView(
+        currentPage = Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: "What's happening in the reptile world?",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+            _buildCommonNavMenu(),
+            Expanded(
+              child: ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: "What's happening in the reptile world?",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  ...List.generate(10, (index) => PostCard(
+                    username: "ReptileLover${index + 1}",
+                    timeAgo: "${index + 1}h ago",
+                    content: _getSamplePost(index),
+                    likes: (index + 1) * 5,
+                    comments: (index + 1) * 3,
+                  )),
+                ],
               ),
             ),
-            ...List.generate(10, (index) => PostCard(
-              username: "ReptileLover${index + 1}",
-              timeAgo: "${index + 1}h ago",
-              content: _getSamplePost(index),
-              likes: (index + 1) * 5,
-              comments: (index + 1) * 3,
-            )),
           ],
         );
         break;
       case 1:
-        currentPage = const AlbumsPage();
+        currentPage = Column(
+          children: [
+            _buildCommonNavMenu(),
+            const Expanded(child: AlbumsPage()),
+          ],
+        );
         break;
       case 2:
-        currentPage = const FeedPage();
+        currentPage = Column(
+          children: [
+            _buildCommonNavMenu(),
+            const Expanded(child: FeedPage()),
+          ],
+        );
         break;
       default:
         currentPage = const SizedBox.shrink();
@@ -218,7 +295,7 @@ class _PostPageState extends State<PostPage> {
                 color: Color(0xFF4CAF50),
                 blurRadius: 8.0,
               ),
-              Shadow(offset: Offset(-1, -1), color: Color(0xFF0A2A0A)), // Very dark green
+              Shadow(offset: Offset(-1, -1), color: Color(0xFF0A2A0A)),
               Shadow(offset: Offset(1, -1), color: Color(0xFF0A2A0A)),
               Shadow(offset: Offset(1, 1), color: Color(0xFF0A2A0A)),
               Shadow(offset: Offset(-1, 1), color: Color(0xFF0A2A0A)),
@@ -237,43 +314,6 @@ class _PostPageState extends State<PostPage> {
           ),
           const SizedBox(width: 8),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildNavItem('Post', 0),
-                      _buildNavItem('Albums', 1),
-                      _buildNavItem('Feed', 2),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: double.infinity,
-                  height: 2,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: _selectedIndex * (MediaQuery.of(context).size.width / 3),
-                        width: MediaQuery.of(context).size.width / 3,
-                        child: Container(
-                          height: 2,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
       body: currentPage,
     );
@@ -496,15 +536,15 @@ class _AlbumsPageState extends State<AlbumsPage> {
 }
 
 class FeedPage extends StatefulWidget {
-  const FeedPage({super.key});
+  const FeedPage({Key? key}) : super(key: key);
 
   @override
-  State<FeedPage> createState() => _FeedPageState();
+  _FeedPageState createState() => _FeedPageState();
 }
 
 class _FeedPageState extends State<FeedPage> {
   final List<String> contentTypes = List.generate(30, (index) => 
-    index % 3 == 0 ? 'video' : 'image'
+    index % 2 == 0 ? 'photo' : 'video'
   );
   Set<int> hoveredIndices = {};
 
