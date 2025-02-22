@@ -157,6 +157,21 @@ class _PostPageState extends State<PostPage> {
     }
   }
 
+  void _submitPost() {
+    if (_postController.text.trim().isNotEmpty) {
+      setState(() {
+        _posts.insert(0, Post(
+          content: _postController.text,
+          username: "ReptileLover", // You can customize this
+          timestamp: DateTime.now(),
+          likes: 0,
+          comments: 0,
+        ));
+        _postController.clear();
+      });
+    }
+  }
+
   @override
   void dispose() {
     _postController.dispose();
@@ -236,23 +251,41 @@ class _PostPageState extends State<PostPage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: "What's happening in the reptile world?",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _postController,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText: "What's happening in the reptile world?",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _submitPost,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(50),
+                            backgroundColor: const Color(0xFF1B5E20),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Submit Post'),
+                        ),
+                      ],
                     ),
                   ),
-                  ...List.generate(10, (index) => PostCard(
-                    username: "ReptileLover${index + 1}",
-                    timeAgo: "${index + 1}h ago",
-                    content: _getSamplePost(index),
-                    likes: (index + 1) * 5,
-                    comments: (index + 1) * 3,
-                  )),
+                  ..._posts.map((post) => PostCard(
+                    username: post.username,
+                    timeAgo: _getTimeAgo(post.timestamp),
+                    content: post.content,
+                    likes: post.likes,
+                    comments: post.comments,
+                  )).toList(),
                 ],
               ),
             ),
@@ -380,6 +413,11 @@ class PostCard extends StatelessWidget {
     required this.comments,
   });
 
+  String _getRandomReptileEmoji() {
+    final reptiles = ['🦎', '🐊', '🐢', '🐍', '🦕', '🐉', '🐲'];
+    return reptiles[DateTime.now().microsecond % reptiles.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -400,8 +438,8 @@ class PostCard extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      username.substring(0, 1).toUpperCase(),
-                      style: const TextStyle(fontSize: 20),
+                      _getRandomReptileEmoji(),
+                      style: const TextStyle(fontSize: 24),
                     ),
                   ),
                 ),
