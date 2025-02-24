@@ -586,6 +586,34 @@ class PostCard extends StatelessWidget {
   }
 }
 
+class AlbumImage {
+  final String url;
+  final String title;
+  final DateTime createdAt;
+  bool isFavorite;
+
+  AlbumImage({
+    required this.url,
+    required this.title,
+    required this.createdAt,
+    this.isFavorite = false,
+  });
+}
+
+class Album {
+  final String title;
+  final String description;
+  final List<AlbumImage> images;
+  final DateTime createdAt;
+
+  Album({
+    required this.title,
+    required this.description,
+    required this.images,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
+}
+
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key});
 
@@ -595,6 +623,268 @@ class AlbumsPage extends StatefulWidget {
 
 class _AlbumsPageState extends State<AlbumsPage> {
   Set<int> hoveredIndices = {};
+
+  final List<Album> albums = [
+    Album(
+      title: 'My Bearded Dragon',
+      description: 'Journey of Thor from baby to adult',
+      createdAt: DateTime(2024, 1, 15),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590005354167-6da97870c757',
+          title: 'Thor basking',
+          createdAt: DateTime(2024, 1, 15),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1591438677015-d1d1a31c6e0f',
+          title: 'Feeding time',
+          createdAt: DateTime(2024, 1, 16),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Ball Python Collection',
+      description: 'My beautiful morphs',
+      createdAt: DateTime(2024, 1, 10),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1585095595274-aeffac74e394',
+          title: 'Ball Python',
+          createdAt: DateTime(2024, 1, 10),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1585095595277-e2fad3a0f68e',
+          title: 'Ball Python',
+          createdAt: DateTime(2024, 1, 11),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1585095595285-91c7bf27ed4c',
+          title: 'Ball Python',
+          createdAt: DateTime(2024, 1, 12),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Gecko Paradise',
+      description: 'My leopard gecko family',
+      createdAt: DateTime(2024, 1, 5),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1582847607825-2c8ed4c3dd8c',
+          title: 'Leopard Gecko',
+          createdAt: DateTime(2024, 1, 5),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1582847607854-3093e4892c44',
+          title: 'Leopard Gecko',
+          createdAt: DateTime(2024, 1, 6),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1582847607988-c44e76abbce7',
+          title: 'Leopard Gecko',
+          createdAt: DateTime(2024, 1, 7),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1582847608635-87b0494c7b22',
+          title: 'Leopard Gecko',
+          createdAt: DateTime(2024, 1, 8),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Chameleon Chronicles',
+      description: 'Color-changing moments',
+      createdAt: DateTime(2024, 1, 2),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1580407836821-0fe8c46a2e21',
+          title: 'Chameleon',
+          createdAt: DateTime(2024, 1, 2),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1580407835676-e0c17d9195b3',
+          title: 'Chameleon',
+          createdAt: DateTime(2024, 1, 3),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1580407834105-5e04fbf6c8a5',
+          title: 'Chameleon',
+          createdAt: DateTime(2024, 1, 4),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Tortoise Tales',
+      description: 'Life in the slow lane',
+      createdAt: DateTime(2023, 12, 30),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1597162216923-ba6d99390c1f',
+          title: 'Tortoise',
+          createdAt: DateTime(2023, 12, 30),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1597162216924-c1f1489f90d3',
+          title: 'Tortoise',
+          createdAt: DateTime(2023, 12, 31),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1597162216922-c1f1489f90d2',
+          title: 'Tortoise',
+          createdAt: DateTime(2024, 1, 1),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Corn Snake Collection',
+      description: 'Beautiful morphs and patterns',
+      createdAt: DateTime(2023, 12, 25),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1585095595275-e2f1d9d34e03',
+          title: 'Corn Snake',
+          createdAt: DateTime(2023, 12, 25),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1585095595278-3e5f9a1db4d9',
+          title: 'Corn Snake',
+          createdAt: DateTime(2023, 12, 26),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1585095595280-3e5f9a1db4da',
+          title: 'Corn Snake',
+          createdAt: DateTime(2023, 12, 27),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Blue Tongue Skinks',
+      description: 'My Australian friends',
+      createdAt: DateTime(2023, 12, 20),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590691566705-5b66e76d3c6c',
+          title: 'Blue Tongue Skink',
+          createdAt: DateTime(2023, 12, 20),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590691566706-5b66e76d3c6d',
+          title: 'Blue Tongue Skink',
+          createdAt: DateTime(2023, 12, 21),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590691566707-5b66e76d3c6e',
+          title: 'Blue Tongue Skink',
+          createdAt: DateTime(2023, 12, 22),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Green Iguana Journey',
+      description: 'Watch them grow',
+      createdAt: DateTime(2023, 12, 15),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590692464430-96ff0b97a258',
+          title: 'Green Iguana',
+          createdAt: DateTime(2023, 12, 15),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590692464431-96ff0b97a259',
+          title: 'Green Iguana',
+          createdAt: DateTime(2023, 12, 16),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590692464432-96ff0b97a260',
+          title: 'Green Iguana',
+          createdAt: DateTime(2023, 12, 17),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Tegu Time',
+      description: 'My Argentine black and white tegu',
+      createdAt: DateTime(2023, 12, 10),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590693870249-d6ef10fcd0c2',
+          title: 'Tegu',
+          createdAt: DateTime(2023, 12, 10),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590693870250-d6ef10fcd0c3',
+          title: 'Tegu',
+          createdAt: DateTime(2023, 12, 11),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590693870251-d6ef10fcd0c4',
+          title: 'Tegu',
+          createdAt: DateTime(2023, 12, 12),
+        ),
+      ],
+    ),
+    Album(
+      title: 'Monitor Magic',
+      description: 'Life with my savannah monitor',
+      createdAt: DateTime(2023, 12, 5),
+      images: [
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590694436798-9e8d8b4f5b3f',
+          title: 'Savannah Monitor',
+          createdAt: DateTime(2023, 12, 5),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590694436799-9e8d8b4f5b40',
+          title: 'Savannah Monitor',
+          createdAt: DateTime(2023, 12, 6),
+        ),
+        AlbumImage(
+          url: 'https://images.unsplash.com/photo-1590694436800-9e8d8b4f5b41',
+          title: 'Savannah Monitor',
+          createdAt: DateTime(2023, 12, 7),
+        ),
+      ],
+    ),
+  ];
+
+  void _openAlbum(BuildContext context, Album album) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AlbumDetailPage(album: album),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Widget _buildImageWithFallback(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Icon(
+            Icons.pets,
+            size: 50,
+            color: Colors.white70,
+          ),
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -606,69 +896,294 @@ class _AlbumsPageState extends State<AlbumsPage> {
         crossAxisSpacing: 8,
         childAspectRatio: 1,
       ),
-      itemCount: 20,
+      itemCount: albums.length,
       itemBuilder: (context, index) {
         return MouseRegion(
           onEnter: (_) => setState(() => hoveredIndices.add(index)),
           onExit: (_) => setState(() => hoveredIndices.remove(index)),
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                AnimatedScale(
-                  scale: hoveredIndices.contains(index) ? 1.1 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Image.network(
-                    'https://picsum.photos/seed/${index + 100}/300/300',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: AnimatedContainer(
+          child: GestureDetector(
+            onTap: () => _openAlbum(context, albums[index]),
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AnimatedScale(
+                    scale: hoveredIndices.contains(index) ? 1.1 : 1.0,
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(hoveredIndices.contains(index) ? 0.9 : 0.8),
-                          Colors.transparent,
+                    child: _buildImageWithFallback(albums[index].images.first.url),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(hoveredIndices.contains(index) ? 0.9 : 0.8),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            albums[index].title,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: hoveredIndices.contains(index) ? 16 : 14,
+                            ),
+                          ),
+                          if (hoveredIndices.contains(index)) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'Created: ${_formatDate(albums[index].createdAt)}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              albums[index].description,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Reptile ${index + 1}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: hoveredIndices.contains(index) ? 16 : 14,
-                          ),
-                        ),
-                        if (hoveredIndices.contains(index))
-                          Text(
-                            'Click to view album',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 12,
-                            ),
-                          ),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class AlbumDetailPage extends StatefulWidget {
+  final Album album;
+
+  const AlbumDetailPage({
+    super.key,
+    required this.album,
+  });
+
+  @override
+  State<AlbumDetailPage> createState() => _AlbumDetailPageState();
+}
+
+class _AlbumDetailPageState extends State<AlbumDetailPage> {
+  Set<int> hoveredIndices = {};
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Widget _buildImageWithFallback(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Icon(
+            Icons.pets,
+            size: 50,
+            color: Colors.white70,
+          ),
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.album.title),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              widget.album.description,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: widget.album.images.length,
+              itemBuilder: (context, index) {
+                final image = widget.album.images[index];
+                return MouseRegion(
+                  onEnter: (_) => setState(() => hoveredIndices.add(index)),
+                  onExit: (_) => setState(() => hoveredIndices.remove(index)),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FullScreenImage(
+                            imageUrl: image.url,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Hero(
+                            tag: image.url,
+                            child: _buildImageWithFallback(image.url),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton(
+                              icon: Icon(
+                                image.isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: image.isFavorite ? Colors.red : Colors.white,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  image.isFavorite = !image.isFavorite;
+                                });
+                              },
+                            ),
+                          ),
+                          if (hoveredIndices.contains(index))
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.8),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      image.title,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _formatDate(image.createdAt),
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.7),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FullScreenImage extends StatelessWidget {
+  final String imageUrl;
+
+  const FullScreenImage({
+    super.key,
+    required this.imageUrl,
+  });
+
+  Widget _buildImageWithFallback(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.black,
+          child: const Icon(
+            Icons.pets,
+            size: 100,
+            color: Colors.white70,
+          ),
+        );
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Center(
+          child: Hero(
+            tag: imageUrl,
+            child: _buildImageWithFallback(imageUrl),
+          ),
+        ),
+      ),
     );
   }
 }
