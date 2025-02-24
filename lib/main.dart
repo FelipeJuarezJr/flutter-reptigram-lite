@@ -631,7 +631,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
       createdAt: DateTime(2024, 1, 15),
       images: [
         AlbumImage(
-          url: 'https://images.unsplash.com/photo-1590005354167-6da97870c757',
+          url: 'https://images.unsplash.com/photo-1590005176489-db2e714711fc',
           title: 'Thor basking',
           createdAt: DateTime(2024, 1, 15),
         ),
@@ -680,12 +680,12 @@ class _AlbumsPageState extends State<AlbumsPage> {
           createdAt: DateTime(2024, 1, 6),
         ),
         AlbumImage(
-          url: 'https://images.unsplash.com/photo-1582847607988-c44e76abbce7',
+          url: 'https://images.unsplash.com/photo-1582847607888-c44e76abbce7',
           title: 'Leopard Gecko',
           createdAt: DateTime(2024, 1, 7),
         ),
         AlbumImage(
-          url: 'https://images.unsplash.com/photo-1582847608635-87b0494c7b22',
+          url: 'https://images.unsplash.com/photo-1582847607988-c44e76abbce7',
           title: 'Leopard Gecko',
           createdAt: DateTime(2024, 1, 8),
         ),
@@ -973,24 +973,13 @@ class _AlbumsPageState extends State<AlbumsPage> {
   }
 }
 
-class AlbumDetailPage extends StatefulWidget {
+class AlbumDetailPage extends StatelessWidget {
   final Album album;
 
   const AlbumDetailPage({
     super.key,
     required this.album,
   });
-
-  @override
-  State<AlbumDetailPage> createState() => _AlbumDetailPageState();
-}
-
-class _AlbumDetailPageState extends State<AlbumDetailPage> {
-  Set<int> hoveredIndices = {};
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
 
   Widget _buildImageWithFallback(String imageUrl) {
     return Image.network(
@@ -1022,7 +1011,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.album.title),
+        title: Text(album.title),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: Column(
@@ -1031,7 +1020,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              widget.album.description,
+              album.description,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -1046,90 +1035,22 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
               ),
-              itemCount: widget.album.images.length,
+              itemCount: album.images.length,
               itemBuilder: (context, index) {
-                final image = widget.album.images[index];
-                return MouseRegion(
-                  onEnter: (_) => setState(() => hoveredIndices.add(index)),
-                  onExit: (_) => setState(() => hoveredIndices.remove(index)),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FullScreenImage(
-                            imageUrl: image.url,
-                          ),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullScreenImage(
+                          imageUrl: album.images[index].url,
                         ),
-                      );
-                    },
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Hero(
-                            tag: image.url,
-                            child: _buildImageWithFallback(image.url),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: IconButton(
-                              icon: Icon(
-                                image.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: image.isFavorite ? Colors.red : Colors.white,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  image.isFavorite = !image.isFavorite;
-                                });
-                              },
-                            ),
-                          ),
-                          if (hoveredIndices.contains(index))
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                    colors: [
-                                      Colors.black.withOpacity(0.8),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      image.title,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      _formatDate(image.createdAt),
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.7),
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
                       ),
-                    ),
+                    );
+                  },
+                  child: Hero(
+                    tag: album.images[index].url,
+                    child: _buildImageWithFallback(album.images[index].url),
                   ),
                 );
               },
@@ -1188,110 +1109,290 @@ class FullScreenImage extends StatelessWidget {
   }
 }
 
+class FeedItem {
+  final String imageUrl;
+  final String username;
+  final String title;
+  final DateTime createdAt;
+  bool isFollowing;
+  bool isFavorite;
+
+  FeedItem({
+    required this.imageUrl,
+    required this.username,
+    required this.title,
+    DateTime? createdAt,
+    this.isFollowing = false,
+    this.isFavorite = false,
+  }) : createdAt = createdAt ?? DateTime.now();
+}
+
 class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);
 
   @override
-  _FeedPageState createState() => _FeedPageState();
+  State<FeedPage> createState() => _FeedPageState();
 }
 
 class _FeedPageState extends State<FeedPage> {
-  final List<String> contentTypes = List.generate(30, (index) => 
-    index % 2 == 0 ? 'photo' : 'video'
-  );
   Set<int> hoveredIndices = {};
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoading = false;
+  List<FeedItem> _feedItems = [];
+  
+  // Expanded list of reptile images
+  final List<String> sampleImages = [
+    // Bearded Dragons
+    'https://images.unsplash.com/photo-1590005176489-db2e714711fc',
+    'https://images.unsplash.com/photo-1576381394626-53b3d2d48145',
+    'https://images.unsplash.com/photo-1590005354167-6da97870c757',
+    'https://images.unsplash.com/photo-1591438677015-d1d1a31c6e0f',
+    'https://images.unsplash.com/photo-1590005354138-25a427439b63',
+    
+    // Ball Pythons
+    'https://images.unsplash.com/photo-1585095595274-aeffac74e394',
+    'https://images.unsplash.com/photo-1585095595277-e2fad3a0f68e',
+    'https://images.unsplash.com/photo-1585095595185-3aa15d06e57c',
+    'https://images.unsplash.com/photo-1543694327-b6c0fc1b9ae1',
+    'https://images.unsplash.com/photo-1531578944014-664cdd4b3ad5',
+    
+    // Leopard Geckos
+    'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f',
+    'https://images.unsplash.com/photo-1580407836821-0fe8c46a2e21',
+    'https://images.unsplash.com/photo-1597162216923-ba6d99390c1f',
+    'https://images.unsplash.com/photo-1445820133247-bfef5c9a55c7',
+    'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29d',
+    
+    // Chameleons
+    'https://images.unsplash.com/photo-1590691566705-5b66e76d3c6c',
+    'https://images.unsplash.com/photo-1580541631971-c25e86667ed5',
+    'https://images.unsplash.com/photo-1581923627606-796716a0d66b',
+    'https://images.unsplash.com/photo-1581923627606-796716a0d66c',
+    'https://images.unsplash.com/photo-1581923627606-796716a0d66d',
+    
+    // Green Iguanas
+    'https://images.unsplash.com/photo-1590692464430-96ff0b97a258',
+    'https://images.unsplash.com/photo-1582847607825-2c8ed4c3dd8c',
+    'https://images.unsplash.com/photo-1576381394626-53b3d2d48146',
+    'https://images.unsplash.com/photo-1576381394626-53b3d2d48147',
+    'https://images.unsplash.com/photo-1576381394626-53b3d2d48148',
+    
+    // Tortoises & Turtles
+    'https://images.unsplash.com/photo-1590693870249-d6ef10fcd0c2',
+    'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f',
+    'https://images.unsplash.com/photo-1549813816-94c3e4a6dd77',
+    'https://images.unsplash.com/photo-1549813816-94c3e4a6dd78',
+    'https://images.unsplash.com/photo-1549813816-94c3e4a6dd79',
+    
+    // Blue Tongue Skinks
+    'https://images.unsplash.com/photo-1590005354407-afc2f142b917',
+    'https://images.unsplash.com/photo-1590005354407-afc2f142b918',
+    'https://images.unsplash.com/photo-1590005354407-afc2f142b919',
+    'https://images.unsplash.com/photo-1590005354407-afc2f142b920',
+    'https://images.unsplash.com/photo-1590005354407-afc2f142b921',
+  ];
+
+  final List<String> usernames = [
+    // Bearded Dragon Enthusiasts
+    'BeardedDragonPro', 'DragonKeeper', 'DesertDragon', 'PogonaPal', 'DragonWhisperer',
+    
+    // Python Specialists
+    'BallPythonPro', 'SnakeCharmer', 'PythonParadise', 'RoyalKeeper', 'MorphMaster',
+    
+    // Gecko Experts
+    'GeckoGuru', 'LeopardLover', 'GeckoGuardian', 'SpottedSpecialist', 'NightGecko',
+    
+    // Chameleon Enthusiasts
+    'ChamQueen', 'ColorMaster', 'ChamCare', 'RainbowReptiles', 'ChamChampion',
+    
+    // Iguana Keepers
+    'IguanaKing', 'GreenGuardian', 'IguanaIsland', 'CrestKeeper', 'IguanaInspired',
+    
+    // Tortoise & Turtle Fans
+    'TortoiseLover', 'ShellSeeker', 'TortLife', 'SlowAndSteady', 'ShellShow',
+    
+    // Skink Specialists
+    'SkinkKeeper', 'BlueTongued', 'SkinkLife', 'AussieReptiles', 'SkinkSpotter',
+  ];
+
+  final List<String> titles = [
+    // Bearded Dragon Titles
+    'Morning Basking Session', 'Feeding Time Fun', 'Desert Dragon Display', 'Beardie Bath Time', 'Head Bob Dance',
+    
+    // Ball Python Titles
+    'Royal Python Portrait', 'Perfect Morph', 'Coiled Beauty', 'Shed Success', 'Feeding Strike',
+    
+    // Gecko Titles
+    'Night Hunt', 'Gecko Smile', 'Vertical Climb', 'Spotted Beauty', 'Tail Drop Defense',
+    
+    // Chameleon Titles
+    'Rainbow Display', 'Branch Master', 'Tongue Strike', 'Color Change', 'Cham Close-up',
+    
+    // Iguana Titles
+    'Basking Beauty', 'Green Giant', 'Crest Display', 'Iguana Diet', 'Scale Details',
+    
+    // Tortoise Titles
+    'Shell Patterns', 'Tortoise Trek', 'Gentle Giant', 'Garden Explorer', 'Tortoise Treat',
+    
+    // Skink Titles
+    'Blue Tongue Flash', 'Skink Sunbath', 'Scale Pattern', 'Aussie Beauty', 'Tongue Flick',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _loadInitialItems();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  FeedItem _generateFeedItem(int index) {
+    return FeedItem(
+      imageUrl: sampleImages[index % sampleImages.length],
+      username: usernames[index % usernames.length],
+      title: titles[index % titles.length],
+    );
+  }
+
+  void _loadInitialItems() {
+    for (int i = 0; i < 24; i++) {
+      _feedItems.add(_generateFeedItem(i));
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent * 0.7 && !_isLoading) {
+      _loadMoreItems();
+    }
+  }
+
+  Future<void> _loadMoreItems() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    final currentLength = _feedItems.length;
+    for (int i = 0; i < 12; i++) {
+      _feedItems.add(_generateFeedItem(currentLength + i));
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _openFullScreenImage(BuildContext context, FeedItem item, int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenFeedImage(
+          feedItem: item,
+          onFavoriteChanged: (bool isFavorite) {
+            setState(() {
+              item.isFavorite = isFavorite;
+            });
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(4),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        childAspectRatio: 1,
-      ),
-      itemCount: 30,
-      itemBuilder: (context, index) {
-        return MouseRegion(
-          onEnter: (_) => setState(() => hoveredIndices.add(index)),
-          onExit: (_) => setState(() => hoveredIndices.remove(index)),
-          child: Card(
-            margin: EdgeInsets.zero,
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                AnimatedScale(
-                  scale: hoveredIndices.contains(index) ? 1.1 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Image.network(
-                    'https://picsum.photos/seed/${index + 200}/200/200',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                if (contentTypes[index] == 'video')
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Icon(
-                        Icons.play_circle_outline,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(hoveredIndices.contains(index) ? 0.9 : 0.7),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+    return Column(
+      children: [
+        Expanded(
+          child: GridView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1,
+            ),
+            itemCount: _isLoading 
+                ? _feedItems.length + 3 
+                : _feedItems.length,
+            itemBuilder: (context, index) {
+              if (index >= _feedItems.length) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final item = _feedItems[index];
+              return MouseRegion(
+                onEnter: (_) => setState(() => hoveredIndices.add(index)),
+                onExit: (_) => setState(() => hoveredIndices.remove(index)),
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => _openFullScreenImage(context, item, _feedItems.indexOf(item)),
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.favorite,
-                              color: Colors.white,
-                              size: hoveredIndices.contains(index) ? 18 : 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${(index + 1) * 11}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: hoveredIndices.contains(index) ? 14 : 12,
+                        AnimatedScale(
+                          scale: hoveredIndices.contains(index) ? 1.1 : 1.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: _buildImageWithFallback(item.imageUrl),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                item.isFavorite = !item.isFavorite;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                item.isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: item.isFavorite ? Colors.red : Colors.white,
+                                size: 20,
                               ),
                             ),
-                          ],
+                          ),
                         ),
                         if (hoveredIndices.contains(index))
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              contentTypes[index] == 'video' ? 'Watch video' : 'View image',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 12,
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.8),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                              child: Text(
+                                item.username,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -1299,11 +1400,146 @@ class _FeedPageState extends State<FeedPage> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageWithFallback(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Icon(
+            Icons.pets,
+            size: 50,
+            color: Colors.white70,
           ),
         );
       },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class FullScreenFeedImage extends StatelessWidget {
+  final FeedItem feedItem;
+  final Function(bool) onFavoriteChanged;
+
+  const FullScreenFeedImage({
+    super.key,
+    required this.feedItem,
+    required this.onFavoriteChanged,
+  });
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black.withOpacity(0.5),
+        foregroundColor: Colors.white,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              feedItem.username,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              _formatDate(feedItem.createdAt),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              feedItem.isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: feedItem.isFavorite ? Colors.red : Colors.white,
+            ),
+            onPressed: () {
+              onFavoriteChanged(!feedItem.isFavorite);
+            },
+          ),
+        ],
+      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Center(
+              child: Hero(
+                tag: feedItem.imageUrl,
+                child: Image.network(
+                  feedItem.imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.black,
+                      child: const Icon(
+                        Icons.pets,
+                        size: 100,
+                        color: Colors.white70,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.8),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Text(
+                feedItem.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
