@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 void main() {
   runApp(const MyApp());
@@ -238,6 +239,7 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
+  final _feedKey = GlobalKey<_FeedPageState>();
   final TextEditingController _postController = TextEditingController();
   final List<Post> _posts = [];
   int _selectedIndex = 0;
@@ -305,7 +307,7 @@ class _PostPageState extends State<PostPage> {
             ],
           ),
         ),
-        if (_selectedIndex == 2) // Only show icons for Feed Page
+        if (_selectedIndex == 2)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
@@ -314,7 +316,9 @@ class _PostPageState extends State<PostPage> {
                 IconButton(
                   icon: const Icon(Icons.grid_on),
                   color: const Color(0xFF1B5E20),
-                  onPressed: () {},
+                  onPressed: () {
+                    _feedKey.currentState?.setFeedType(FeedType.images);
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.star),
@@ -324,7 +328,9 @@ class _PostPageState extends State<PostPage> {
                 IconButton(
                   icon: const Icon(Icons.play_circle_outline),
                   color: const Color(0xFF1B5E20),
-                  onPressed: () {},
+                  onPressed: () {
+                    _feedKey.currentState?.setFeedType(FeedType.videos);
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.person_outline),
@@ -404,7 +410,7 @@ class _PostPageState extends State<PostPage> {
         currentPage = Column(
           children: [
             _buildCommonNavMenu(),
-            const Expanded(child: FeedPage()),
+            Expanded(child: FeedPage(key: _feedKey)),
           ],
         );
         break;
@@ -1109,6 +1115,12 @@ class FullScreenImage extends StatelessWidget {
   }
 }
 
+// Add this enum before the FeedItem class
+enum FeedType {
+  images,
+  videos
+}
+
 class FeedItem {
   final String imageUrl;
   final String username;
@@ -1116,6 +1128,8 @@ class FeedItem {
   final DateTime createdAt;
   bool isFollowing;
   bool isFavorite;
+  final bool isVideo; // Add this field
+  final String? videoUrl; // Add this field
 
   FeedItem({
     required this.imageUrl,
@@ -1124,6 +1138,8 @@ class FeedItem {
     DateTime? createdAt,
     this.isFollowing = false,
     this.isFavorite = false,
+    this.isVideo = false,
+    this.videoUrl,
   }) : createdAt = createdAt ?? DateTime.now();
 }
 
@@ -1139,6 +1155,7 @@ class _FeedPageState extends State<FeedPage> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
   List<FeedItem> _feedItems = [];
+  FeedType _currentFeedType = FeedType.images;
   
   // Expanded list of reptile images
   final List<String> sampleImages = [
@@ -1238,6 +1255,15 @@ class _FeedPageState extends State<FeedPage> {
     'Blue Tongue Flash', 'Skink Sunbath', 'Scale Pattern', 'Aussie Beauty', 'Tongue Flick',
   ];
 
+  // Add this sample video URL list
+  final List<String> sampleVideos = [
+    'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -1251,17 +1277,48 @@ class _FeedPageState extends State<FeedPage> {
     super.dispose();
   }
 
-  FeedItem _generateFeedItem(int index) {
-    return FeedItem(
-      imageUrl: sampleImages[index % sampleImages.length],
-      username: usernames[index % usernames.length],
-      title: titles[index % titles.length],
-    );
+  void setFeedType(FeedType type) {
+    print('Setting feed type to: $type');
+    if (_currentFeedType != type) {
+      setState(() {
+        _currentFeedType = type;
+        _feedItems.clear();
+        _loadInitialItems();
+      });
+      print('Feed type changed to: $_currentFeedType');
+      print('Number of items: ${_feedItems.length}');
+    }
   }
 
   void _loadInitialItems() {
+    final newItems = <FeedItem>[];
     for (int i = 0; i < 24; i++) {
-      _feedItems.add(_generateFeedItem(i));
+      newItems.add(_generateFeedItem(i));
+    }
+    
+    setState(() {
+      _feedItems = newItems;
+    });
+    
+    print('Loaded ${_feedItems.length} items. Feed type: $_currentFeedType');
+  }
+
+  FeedItem _generateFeedItem(int index) {
+    if (_currentFeedType == FeedType.videos) {
+      return FeedItem(
+        imageUrl: sampleImages[index % sampleImages.length],
+        username: 'VideoCreator${index + 1}',
+        title: 'Reptile Video #${index + 1}',
+        isVideo: true,
+        videoUrl: sampleVideos[index % sampleVideos.length], // Use the sample videos
+      );
+    } else {
+      return FeedItem(
+        imageUrl: sampleImages[index % sampleImages.length],
+        username: usernames[index % usernames.length],
+        title: titles[index % titles.length],
+        isVideo: false,
+      );
     }
   }
 
@@ -1290,13 +1347,29 @@ class _FeedPageState extends State<FeedPage> {
     });
   }
 
+  void _openFullScreenItem(BuildContext context, FeedItem item, int index) {
+    if (item.isVideo) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VideoPlayerScreen(
+            videoUrl: item.videoUrl!,
+            feedItem: item,
+          ),
+        ),
+      );
+    } else {
+      _openFullScreenImage(context, item, index);
+    }
+  }
+
   void _openFullScreenImage(BuildContext context, FeedItem item, int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => FullScreenFeedImage(
           feedItem: item,
-          onFavoriteChanged: (bool isFavorite) {
+          onFavoriteChanged: (isFavorite) {
             setState(() {
               item.isFavorite = isFavorite;
             });
@@ -1308,8 +1381,20 @@ class _FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('Building FeedPage. Current feed type: $_currentFeedType');
     return Column(
       children: [
+        Container(
+          padding: const EdgeInsets.all(8.0),
+          color: _currentFeedType == FeedType.videos ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+          child: Text(
+            _currentFeedType == FeedType.videos ? 'Video Feed' : 'Image Feed',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         Expanded(
           child: GridView.builder(
             controller: _scrollController,
@@ -1336,7 +1421,7 @@ class _FeedPageState extends State<FeedPage> {
                 onExit: (_) => setState(() => hoveredIndices.remove(index)),
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
-                  onTap: () => _openFullScreenImage(context, item, _feedItems.indexOf(item)),
+                  onTap: () => _openFullScreenItem(context, item, index),
                   child: Card(
                     clipBehavior: Clip.antiAlias,
                     child: Stack(
@@ -1347,6 +1432,21 @@ class _FeedPageState extends State<FeedPage> {
                           duration: const Duration(milliseconds: 200),
                           child: _buildImageWithFallback(item.imageUrl),
                         ),
+                        if (item.isVideo)
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.play_arrow,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
+                          ),
                         Positioned(
                           top: 8,
                           right: 8,
@@ -1539,6 +1639,249 @@ class FullScreenFeedImage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Add this new class for video playback
+class VideoPlayerScreen extends StatefulWidget {
+  final String videoUrl;
+  final FeedItem feedItem;
+
+  const VideoPlayerScreen({
+    super.key,
+    required this.videoUrl,
+    required this.feedItem,
+  });
+
+  @override
+  State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
+}
+
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+  bool _isPlaying = false;
+  bool _isLiked = false;
+  double _sliderValue = 0.0;
+  String _currentPosition = '0:00';
+  String _totalDuration = '0:00';
+
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = widget.feedItem.isFavorite;
+    _initializeVideoPlayer();
+  }
+
+  void _initializeVideoPlayer() {
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+          _totalDuration = _formatDuration(_controller.value.duration);
+        });
+        _controller.addListener(_videoListener);
+      });
+  }
+
+  void _videoListener() {
+    if (_controller.value.isPlaying != _isPlaying) {
+      setState(() {
+        _isPlaying = _controller.value.isPlaying;
+      });
+    }
+    
+    final position = _controller.value.position;
+    final duration = _controller.value.duration;
+    
+    if (duration.inMilliseconds > 0) {
+      setState(() {
+        _sliderValue = position.inMilliseconds / duration.inMilliseconds;
+        _currentPosition = _formatDuration(position);
+      });
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$minutes:$seconds';
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_videoListener);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black.withOpacity(0.5),
+        foregroundColor: Colors.white,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.feedItem.username,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              widget.feedItem.title,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width,
+            maxHeight: MediaQuery.of(context).size.height - kToolbarHeight,
+          ),
+          child: AspectRatio(
+            aspectRatio: 9 / 16,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (_isInitialized)
+                  FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _controller.value.size.width,
+                      height: _controller.value.size.height,
+                      child: VideoPlayer(_controller),
+                    ),
+                  )
+                else
+                  const CircularProgressIndicator(),
+                
+                // Like button overlay on the right
+                Positioned(
+                  right: 16,
+                  bottom: 100,
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isLiked = !_isLiked;
+                            widget.feedItem.isFavorite = _isLiked;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.red : Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Like',
+                        style: TextStyle(
+                          color: _isLiked ? Colors.red : Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Video controls overlay
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.8),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Progress bar
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Colors.white,
+                            inactiveTrackColor: Colors.white30,
+                            thumbColor: Colors.white,
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                          ),
+                          child: Slider(
+                            value: _sliderValue,
+                            onChanged: (value) {
+                              final duration = _controller.value.duration;
+                              final newPosition = duration * value;
+                              _controller.seekTo(newPosition);
+                            },
+                          ),
+                        ),
+                        
+                        // Time and controls
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _currentPosition,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                _isPlaying ? Icons.pause : Icons.play_arrow,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  if (_isPlaying) {
+                                    _controller.pause();
+                                  } else {
+                                    _controller.play();
+                                  }
+                                });
+                              },
+                            ),
+                            Text(
+                              _totalDuration,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
