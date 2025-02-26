@@ -317,6 +317,7 @@ class _PostPageState extends State<PostPage> {
                   icon: const Icon(Icons.grid_on),
                   color: const Color(0xFF1B5E20),
                   onPressed: () {
+                    print('Grid icon pressed');
                     _feedKey.currentState?.setFeedType(FeedType.images);
                   },
                 ),
@@ -329,13 +330,17 @@ class _PostPageState extends State<PostPage> {
                   icon: const Icon(Icons.play_circle_outline),
                   color: const Color(0xFF1B5E20),
                   onPressed: () {
+                    print('Video icon pressed');
                     _feedKey.currentState?.setFeedType(FeedType.videos);
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.person_outline),
+                  icon: const Icon(Icons.people_outline),
                   color: const Color(0xFF1B5E20),
-                  onPressed: () {},
+                  onPressed: () {
+                    print('People icon pressed');
+                    _feedKey.currentState?.setFeedType(FeedType.groups);
+                  },
                 ),
               ],
             ),
@@ -1118,7 +1123,8 @@ class FullScreenImage extends StatelessWidget {
 // Add this enum before the FeedItem class
 enum FeedType {
   images,
-  videos
+  videos,
+  groups
 }
 
 class FeedItem {
@@ -1264,6 +1270,39 @@ class _FeedPageState extends State<FeedPage> {
     'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
   ];
 
+  final List<Group> _groups = [
+    Group(
+      name: 'Gecko Lovers',
+      description: 'A community for leopard gecko enthusiasts and owners',
+      imageUrl: 'assets/images/gecko.jpg',
+      memberCount: 1250,
+    ),
+    Group(
+      name: 'Turtle Enthusiasts',
+      description: 'Share your turtle and tortoise care tips and experiences',
+      imageUrl: 'assets/images/turtle.jpg',
+      memberCount: 890,
+    ),
+    Group(
+      name: 'Boa Constrictor Group',
+      description: 'For boa constrictor owners and admirers',
+      imageUrl: 'assets/images/snake.jpg',
+      memberCount: 650,
+    ),
+    Group(
+      name: 'Bearded Dragon Club',
+      description: 'Everything about bearded dragons and their care',
+      imageUrl: 'assets/images/dragon.jpg',
+      memberCount: 2100,
+    ),
+    Group(
+      name: 'Chameleon Community',
+      description: 'Discuss chameleon species, care, and breeding',
+      imageUrl: 'assets/images/chameleon.jpg',
+      memberCount: 780,
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -1279,15 +1318,13 @@ class _FeedPageState extends State<FeedPage> {
 
   void setFeedType(FeedType type) {
     print('Setting feed type to: $type');
-    if (_currentFeedType != type) {
-      setState(() {
-        _currentFeedType = type;
-        _feedItems.clear();
+    setState(() {
+      _currentFeedType = type;
+      _feedItems.clear();
+      if (type != FeedType.groups) {
         _loadInitialItems();
-      });
-      print('Feed type changed to: $_currentFeedType');
-      print('Number of items: ${_feedItems.length}');
-    }
+      }
+    });
   }
 
   void _loadInitialItems() {
@@ -1381,14 +1418,22 @@ class _FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building FeedPage. Current feed type: $_currentFeedType');
+    print('Current feed type: $_currentFeedType');
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(8.0),
-          color: _currentFeedType == FeedType.videos ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+          color: _currentFeedType == FeedType.groups 
+              ? Colors.blue.withOpacity(0.1) 
+              : _currentFeedType == FeedType.videos 
+                  ? Colors.red.withOpacity(0.1) 
+                  : Colors.green.withOpacity(0.1),
           child: Text(
-            _currentFeedType == FeedType.videos ? 'Video Feed' : 'Image Feed',
+            _currentFeedType == FeedType.groups 
+                ? 'Groups' 
+                : _currentFeedType == FeedType.videos 
+                    ? 'Video Feed' 
+                    : 'Image Feed',
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -1396,115 +1441,197 @@ class _FeedPageState extends State<FeedPage> {
           ),
         ),
         Expanded(
-          child: GridView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 1,
-            ),
-            itemCount: _isLoading 
-                ? _feedItems.length + 3 
-                : _feedItems.length,
-            itemBuilder: (context, index) {
-              if (index >= _feedItems.length) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              final item = _feedItems[index];
-              return MouseRegion(
-                onEnter: (_) => setState(() => hoveredIndices.add(index)),
-                onExit: (_) => setState(() => hoveredIndices.remove(index)),
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => _openFullScreenItem(context, item, index),
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        AnimatedScale(
-                          scale: hoveredIndices.contains(index) ? 1.1 : 1.0,
-                          duration: const Duration(milliseconds: 200),
-                          child: _buildImageWithFallback(item.imageUrl),
-                        ),
-                        if (item.isVideo)
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.play_arrow,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                            ),
-                          ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                item.isFavorite = !item.isFavorite;
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                item.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: item.isFavorite ? Colors.red : Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (hoveredIndices.contains(index))
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.8),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
-                              child: Text(
-                                item.username,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          child: _currentFeedType == FeedType.groups
+              ? _buildGroupsList()
+              : _buildMediaGrid(),
         ),
       ],
+    );
+  }
+
+  Widget _buildGroupsList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(8),
+      itemCount: _groups.length,
+      itemBuilder: (context, index) {
+        final group = _groups[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(12),
+            leading: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.pets,
+                  size: 30,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            title: Text(
+              group.name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(group.description),
+                const SizedBox(height: 4),
+                Text(
+                  '${group.memberCount} members',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            trailing: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  final groupIndex = _groups.indexOf(group);
+                  _groups[groupIndex] = Group(
+                    name: group.name,
+                    description: group.description,
+                    imageUrl: group.imageUrl,
+                    memberCount: group.isJoined 
+                        ? group.memberCount - 1 
+                        : group.memberCount + 1,
+                    isJoined: !group.isJoined,
+                  );
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: group.isJoined 
+                    ? Colors.grey 
+                    : const Color(0xFF1B5E20),
+                foregroundColor: Colors.white,
+              ),
+              child: Text(group.isJoined ? 'Leave' : 'Join'),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMediaGrid() {
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemCount: _isLoading 
+          ? _feedItems.length + 3 
+          : _feedItems.length,
+      itemBuilder: (context, index) {
+        if (index >= _feedItems.length) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final item = _feedItems[index];
+        return MouseRegion(
+          onEnter: (_) => setState(() => hoveredIndices.add(index)),
+          onExit: (_) => setState(() => hoveredIndices.remove(index)),
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () => _openFullScreenItem(context, item, index),
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AnimatedScale(
+                    scale: hoveredIndices.contains(index) ? 1.1 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: _buildImageWithFallback(item.imageUrl),
+                  ),
+                  if (item.isVideo)
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          item.isFavorite = !item.isFavorite;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          item.isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: item.isFavorite ? Colors.red : Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (hoveredIndices.contains(index))
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.8),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          item.username,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1885,4 +2012,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ),
     );
   }
+}
+
+class Group {
+  final String name;
+  final String description;
+  final String imageUrl;
+  final int memberCount;
+  final bool isJoined;
+
+  Group({
+    required this.name,
+    required this.description,
+    required this.imageUrl,
+    required this.memberCount,
+    this.isJoined = false,
+  });
 }
