@@ -33,6 +33,32 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <form id="loginForm" style="display: none;">
+    <!-- Hidden form for browser autofill -->
+    <input type="email" name="email" id="email" autocomplete="email"/>
+    <input type="password" name="password" id="password" autocomplete="current-password"/>
+  </form>
+
+  <script>
+    // Enable autofill by connecting hidden form to Flutter
+    window.addEventListener('load', function() {
+      var emailInput = document.querySelector('#email');
+      var passwordInput = document.querySelector('#password');
+      
+      if (emailInput && passwordInput) {
+        emailInput.addEventListener('change', function(e) {
+          // This will be handled by Flutter
+          window.flutter_inappwebview.callHandler('onAutoFillEmail', e.target.value);
+        });
+        
+        passwordInput.addEventListener('change', function(e) {
+          // This will be handled by Flutter
+          window.flutter_inappwebview.callHandler('onAutoFillPassword', e.target.value);
+        });
+      }
+    });
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 
   <!-- Add Firebase scripts -->
