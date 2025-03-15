@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyBf2rv_asH86gY2fEGY4yUw4NJYRr5nfnw",
+      authDomain: "reptigram-lite.firebaseapp.com",
+      databaseURL: "https://reptigram-lite-default-rtdb.firebaseio.com",
+      projectId: "reptigram-lite",
+      storageBucket: "reptigram-lite.firebasestorage.app",
+      messagingSenderId: "1023144692222",
+      appId: "1:1023144692222:web:a2f83e6788f1e0293018af",
+      measurementId: "G-XHBMWC2VD6"
+    ),
+  );
   runApp(const MyApp());
 }
 
@@ -47,6 +63,9 @@ class _WelcomePageState extends State<WelcomePage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -55,6 +74,67 @@ class _WelcomePageState extends State<WelcomePage> {
     _confirmPasswordController.dispose();
     _usernameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignUp() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      // Create user in Firebase Auth
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // Store additional user data in Firestore
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'username': _usernameController.text,
+        'email': _emailController.text,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PostPage()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Sign up failed')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PostPage()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -86,7 +166,6 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
               const Spacer(),
               if (!_showSignUp) ...[
-                // Login Form
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -109,11 +188,10 @@ class _WelcomePageState extends State<WelcomePage> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PostPage()),
-                    );
+                  onPressed: _isLoading ? null : () {
+                    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+                      _handleLogin();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
@@ -123,7 +201,7 @@ class _WelcomePageState extends State<WelcomePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Login'),
+                  child: _isLoading ? const CircularProgressIndicator() : const Text('Login'),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
@@ -135,7 +213,6 @@ class _WelcomePageState extends State<WelcomePage> {
                   child: const Text('Don\'t have an account? Sign up'),
                 ),
               ] else ...[
-                // Sign Up Form
                 TextField(
                   controller: _usernameController,
                   decoration: InputDecoration(
@@ -179,12 +256,12 @@ class _WelcomePageState extends State<WelcomePage> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement sign up logic
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PostPage()),
-                    );
+                  onPressed: _isLoading ? null : () {
+                    if (_emailController.text.isNotEmpty && 
+                        _passwordController.text.isNotEmpty &&
+                        _usernameController.text.isNotEmpty) {
+                      _handleSignUp();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
@@ -194,7 +271,7 @@ class _WelcomePageState extends State<WelcomePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Sign Up'),
+                  child: _isLoading ? const CircularProgressIndicator() : const Text('Sign Up'),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
